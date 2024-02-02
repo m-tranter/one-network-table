@@ -12,7 +12,7 @@
   </head>
   <body>
     <div>
-      <style type="text/css" scoped>
+           <style type="text/css" scoped>
         button {
           color: Black;
         }
@@ -70,7 +70,17 @@
         .fakeLink:hover {
           color: darkblue;
         }
+        @supports (-webkit-appearance: none) {
+          .entryUpIcon {
+            top: -.4rem;
+          }
+          .entryDownIcon {
+            bottom: -.3rem;
+            right: 1rem;
+          }
+        }
       </style>
+
       <div class="container mt-3" id="app">
         <h1>Roadworks</h1>
         <div>
