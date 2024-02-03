@@ -38,10 +38,10 @@ const dedup = (arr) => {
 // Ignore description items that are a single word.
 const dedupDesc = (arr) => {
   return arr.reduce((acc, e) => {
-    if (e.split(' ').length === 1) {
+    if (e.split(' ').length === 1 || e.includes('scheduled')) {
       return acc;
     }
-    return [...acc, e];
+    return [...acc, initialCap(e)];
   }, []);
 };
 
@@ -62,7 +62,7 @@ const Item = function (obj) {
   }
 };
 
-// Separate constructor fot the details part of the object.
+// Separate constructor for the details part of the object.
 const Details = function (obj) {
   let sev = obj.severity;
   this.severity = sev ? initialCap(sev._text) : '';
