@@ -12,7 +12,7 @@
   </head>
   <body>
     <div>
-           <style type="text/css" scoped>
+      <style type="text/css" scoped>
         button {
           color: Black;
         }
@@ -53,6 +53,7 @@
         }
         td {
           vertical-align: top;
+          padding-top: 0.5rem;
         }
         table {
           border-collapse: collapse;
@@ -72,15 +73,23 @@
         }
         @supports (-webkit-appearance: none) {
           .entryUpIcon {
-            top: -.4rem;
+            top: -0.4rem;
           }
           .entryDownIcon {
-            bottom: -.3rem;
+            bottom: -0.3rem;
             right: 1rem;
           }
         }
+        @supports (-moz-appearance: none) {
+          .entryUpIcon {
+            top: -0.6rem;
+          }
+          .entryDownIcon {
+            bottom: -0.3rem;
+            right: 0.77rem;
+          }
+        }
       </style>
-
       <div class="container mt-3" id="app">
         <h1>Roadworks</h1>
         <div>
@@ -222,7 +231,10 @@
                             </li>
                           </ul>
                         </span>
-                        <p class="mt-2 mb-0 text-center">
+                        <p
+                          class="mt-2 mb-0 ps-1"
+                          :class="{'text-danger':  item.severity === 'High'}"
+                        >
                           Severity: {{item.severity}}
                         </p>
                       </td>
@@ -282,7 +294,7 @@
             copyItems: [],
             backup: [],
             searchedItems: [],
-            searchFields: ['description', 'responsible', 'locations'],
+            searchFields: ['extra', 'severity', 'description', 'responsible', 'locations'],
             currentPageIndex: 0,
             pageSize: 10,
             pageIndex: 0,
@@ -290,12 +302,11 @@
             pageCount: 0,
             pageBtns: [],
             pages: [],
-            regEx: /^[A-Z]{2}\d{2}.*$/,
-            schRx: /(.*?)(scheduled)(.*?)(due to)(.*?)/,
-            worksRx: /works \((?!Dates to be confirmed\)).*/g,
+            idRegEx: /^[A-Z]{2}\d{2}.*$/,
+            ignoreRegEx:
+              /\(Dates to be confirmed\)|Diversion route due to roadworks/,
+            remRegEx: /Roadworks \/ License - |\(Cheshire East Council\)/g,
             loaded: false,
-            showMainMap: false,
-            showMyTable: true,
             timeOptions: {
               hour: 'numeric',
               minute: '2-digit',
@@ -332,10 +343,6 @@
             }
             return ' ' + time.replace(' ', '').toLowerCase();
           },
-          toggleTabs: function () {
-            this.showMainMap = !this.showMainMap;
-            this.showMyTable = !this.showMyTable;
-          },
           showTable: function () {
             this.table = true;
             this.mapUrl = '';
@@ -346,7 +353,6 @@
             }&src=rw.org&options={"googleAPIKey"%3A"AIzaSyDG00gQi_7ApZ54lG6mOu6ov-fNLl7lpOg"%2C"organisationID"%3A1451%2C"embedded"%3Atrue}`;
             this.table = false;
           },
-
           formatDate: function (d) {
             return d.toLocaleDateString('en-GB');
           },
@@ -388,24 +394,10 @@
             }
           },
           stripDesc: function (obj) {
-            let temp = obj.description.replace(this.schRx, '$1$4$5');
-            temp = temp.replace(/Roadworks \/ License - /g, '');
-            temp = temp.replace(
-              /Roadworks due to roadworks/i,
-              'Due to roadworks'
-            );
-            temp = temp.replace('to R', 'to r');
-            temp = temp.replace(this.worksRx, '');
-            temp = temp.split('^#');
-            let words = temp[0].split(/\s/);
-            if (
-              words.length === 1 &&
-              (words[0].match(this.regEx) ||
-                (temp[1] && temp[1].includes(words[0])))
-            ) {
-              temp.shift();
-            }
-            temp = temp.map((el) => el.trim() + '.');
+            let temp = obj.description.replace(this.remRegEx, '');
+            temp = temp.replace(/due to Roadworks works/i, 'due to roadworks');
+            temp = temp.replace(this.idRegEx, '');
+            temp = temp.split('^#').map((el) => el.trim() + '.');
             return { ...obj, description: temp.join('^#') };
           },
           resetSearch: function () {
@@ -474,7 +466,7 @@
           },
           getData: function () {
             this.loading = true;
-            fetch('/cec-api/roadworkstable')
+            fetch('/table')
               .then((res) => {
                 return res.json();
               })
@@ -485,7 +477,7 @@
                 this.copyItems = this.addDates(data.items);
                 this.copyItems = this.copyItems.map((e) => this.stripDesc(e));
                 this.copyItems = this.copyItems.filter(
-                  (e) => !e.description.match(/\(Dates to be confirmed\)|Diversion route due to roadworks/)
+                  (e) => !e.description.match(this.ignoreRegEx)
                 );
                 this.addIndex(this.copyItems);
                 this.copyItems.sort(this.sortNum('startDate'));
@@ -505,7 +497,6 @@
         },
       }).mount('#app');
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
