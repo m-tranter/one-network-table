@@ -221,14 +221,13 @@
                   <tbody>
                     <tr v-for="item in items">
                       <td>
-                        <span @click="showMap(item.url)" class="fakeLink">
+                        <span @click="showMap(item.url)">
                           <ul class="my-0">
-                            <li v-if="!item.locations.length">
-                              No street name given.
-                            </li>
-                            <li v-else v-for="l in item.locations.split('^#')">
-                              {{l}}
-                            </li>
+                            <template v-for="l in item.locations.split('^#')">
+                              <li v-if="l !== 'None'">
+                                <span class="fakeLink">{{l}}</span>
+                              </li>
+                            </template>
                           </ul>
                         </span>
                         <p
@@ -294,7 +293,13 @@
             copyItems: [],
             backup: [],
             searchedItems: [],
-            searchFields: ['extra', 'severity', 'description', 'responsible', 'locations'],
+            searchFields: [
+              'extra',
+              'severity',
+              'description',
+              'responsible',
+              'locations',
+            ],
             currentPageIndex: 0,
             pageSize: 10,
             pageIndex: 0,
@@ -394,10 +399,10 @@
             }
           },
           stripDesc: function (obj) {
-            let temp = obj.description.replace(this.remRegEx, '');
-            temp = temp.replace(/due to Roadworks works/i, 'due to roadworks');
-            temp = temp.replace(this.idRegEx, '');
-            temp = temp.split('^#').map((el) => el.trim() + '.');
+            let temp = obj.description
+              .replace(this.remRegEx, '')
+              .replace(this.idRegEx, '')
+              .split('^#');
             return { ...obj, description: temp.join('^#') };
           },
           resetSearch: function () {
@@ -474,11 +479,11 @@
                 let temp = new Date(data.date);
                 this.date = temp.toLocaleDateString('en-GB');
                 this.time = this.formatTime(temp);
-                this.copyItems = this.addDates(data.items);
-                this.copyItems = this.copyItems.map((e) => this.stripDesc(e));
                 this.copyItems = this.copyItems.filter(
                   (e) => !e.description.match(this.ignoreRegEx)
                 );
+                this.copyItems = this.addDates(data.items);
+                this.copyItems = this.copyItems.map((e) => this.stripDesc(e));
                 this.addIndex(this.copyItems);
                 this.copyItems.sort(this.sortNum('startDate'));
                 this.searchedItems = [...this.copyItems];
