@@ -239,13 +239,10 @@
                       </td>
                       <td>
                         <ul>
-                          <li v-if="item.extra">{{item.extra}}</li>
-                          <li class="d-none" v-if="item.management">
-                            {{item.management}}
-                          </li>
                           <li v-for="v in item.description.split('^#')">
                             {{v}}
                           </li>
+                          <li v-if="item.extra">{{item.extra}}</li>
                         </ul>
                       </td>
                       <td>{{formatDate(item.startDate)}}</td>
