@@ -240,7 +240,8 @@
                       <td>
                         <ul>
                           <li v-for="v in item.description.split('^#')">
-                            {{v}}
+                            <span v-if="v.length">{{v}}</span>
+                            <span v-else>View map for more details</span>
                           </li>
                           <li v-if="item.extra">{{item.extra}}</li>
                         </ul>
@@ -305,8 +306,7 @@
             pageBtns: [],
             pages: [],
             idRegEx: /^[A-Z]{2}\d{2}.*$/,
-            ignoreRegEx:
-              /\(Dates to be confirmed\)|Diversion route due to roadworks/,
+            ignoreRegEx: /Diversion route scheduled|Dates to be confimed/gi,
             remRegEx: /Roadworks \/ License - |\(Cheshire East Council\)/g,
             loaded: false,
             timeOptions: {
@@ -399,7 +399,8 @@
             let temp = obj.description
               .replace(this.remRegEx, '')
               .replace(this.idRegEx, '')
-              .split('^#');
+              .split('^#')
+              .filter((e) => !e.includes('scheduled'));
             return { ...obj, description: temp.join('^#') };
           },
           resetSearch: function () {
@@ -476,10 +477,9 @@
                 let temp = new Date(data.date);
                 this.date = temp.toLocaleDateString('en-GB');
                 this.time = this.formatTime(temp);
-                this.copyItems = this.copyItems.filter(
+                this.copyItems = this.addDates(data.items).filter(
                   (e) => !e.description.match(this.ignoreRegEx)
                 );
-                this.copyItems = this.addDates(data.items);
                 this.copyItems = this.copyItems.map((e) => this.stripDesc(e));
                 this.addIndex(this.copyItems);
                 this.copyItems.sort(this.sortNum('startDate'));
