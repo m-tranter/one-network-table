@@ -21,7 +21,6 @@ app.listen(port, (error) => {
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
 // Remove some unnecessary duplication.
 const dedup = (arr) => {
   return arr.reduce((acc, e) => {
@@ -38,7 +37,7 @@ const dedup = (arr) => {
 // Ignore description items that are a single word.
 const dedupDesc = (arr) => {
   return arr.reduce((acc, e) => {
-    if (e.split(' ').length === 1 || e.includes('scheduled')) {
+    if (e.split(' ').length === 1) {
       return acc;
     }
     return [...acc, initialCap(e)];
