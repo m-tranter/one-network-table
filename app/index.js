@@ -97,10 +97,16 @@ const Details = function (obj) {
 // Helper function to get location information.
 const loc = function (obj) {
   let tpeg = obj.groupOfLocations.tpegPointLocation;
-  if (tpeg && tpeg.name) {
+  if (tpeg && tpeg.point.name) {
     return tpeg.point.name.reduce((acc, e) => {
       let temp = e.descriptor.values.value._text.trim();
-      if (temp === 'Cheshire East' || temp.includes('Ward')) {
+      if (temp === 'Cheshire East') {
+        return acc;
+      }
+      if (temp.includes('Ward')) {
+        if (!acc[acc.length - 1].includes(',')) {
+          acc[acc.length - 1] += `, ${temp.replace("Ward", '').trim()}`;
+        }
         return acc;
       }
       if (acc[0] && temp.startsWith(acc[0])) {
@@ -111,9 +117,9 @@ const loc = function (obj) {
   }
   let itinerary = obj.groupOfLocations.locationContainedInItinerary;
   if (itinerary) {
+    let point = itinerary[0].location.tpegPointLocation.point.name;
     return [
-      itinerary[0].location.tpegPointLocation.point.name[0].descriptor.values
-        .value._text,
+      `${point[0].descriptor.values.value._text}, ${point[2].descriptor.values.value._text.replace("Ward", '').trim()}`,
     ];
   }
   return ['None'];
