@@ -9,10 +9,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
+
+//Change these to reflect the details of your account.
 const url =
   'https://datacloud.one.network/?app_key=94db72b2-058e-2caf-94de16536c81';
 const user = 'cheshireeast';
 const password = 'Tkfdg58F]pjA';
+const council = 'Cheshire East';
 
 app.listen(port, (error) => {
   if (!error) console.log(`Server running on port ${port}`);
@@ -21,11 +24,12 @@ app.listen(port, (error) => {
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 // Remove some unnecessary duplication.
 const dedup = (arr) => {
   return arr.reduce((acc, e) => {
     e.forEach((l) => {
-      l = l.replace(', Cheshire East', '');
+      l = l.replace(`, ${council}`, '');
       if (!acc.includes(l)) {
         acc.push(l);
       }
@@ -37,10 +41,7 @@ const dedup = (arr) => {
 // Ignore description items that are a single word.
 const dedupDesc = (arr) => {
   return arr.reduce((acc, e) => {
-    if (e.split(' ').length === 1) {
-      return acc;
-    }
-    return [...acc, initialCap(e)];
+    return e.split(' ').length === 1 ? acc : [...acc, initialCap(e)];
   }, []);
 };
 
@@ -99,12 +100,12 @@ const loc = function (obj) {
   if (tpeg && tpeg.point.name) {
     return tpeg.point.name.reduce((acc, e) => {
       let temp = e.descriptor.values.value._text.trim();
-      if (temp === 'Cheshire East') {
+      if (temp === council) {
         return acc;
       }
       if (temp.includes('Ward')) {
         if (!acc[acc.length - 1].includes(',')) {
-          acc[acc.length - 1] += `, ${temp.replace("Ward", '').trim()}`;
+          acc[acc.length - 1] += `, ${temp.replace('Ward', '').trim()}`;
         }
         return acc;
       }
@@ -118,7 +119,9 @@ const loc = function (obj) {
   if (itinerary) {
     let point = itinerary[0].location.tpegPointLocation.point.name;
     return [
-      `${point[0].descriptor.values.value._text}, ${point[2].descriptor.values.value._text.replace("Ward", '').trim()}`,
+      `${
+        point[0].descriptor.values.value._text
+      }, ${point[2].descriptor.values.value._text.replace('Ward', '').trim()}`,
     ];
   }
   return ['None'];
