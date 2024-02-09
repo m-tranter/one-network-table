@@ -13,6 +13,28 @@
   <body>
     <div>
       <style type="text/css" scoped>
+        .arrows {
+          max-width: 1rem;
+        }
+        #contentTypeSearchBtn,
+        #contentTypeSearchInput {
+          border: 2px solid #4b5458;
+        }
+        .page-item.disabled .page-link {
+          color: #555c62;
+          border: 2px solid #4b5458;
+        }
+        .page-link {
+          color: #0248b1;
+          border: 2px solid #4b5458;
+          margin: 0 22px 22px 0;
+        }
+        .page-item button {
+          min-width: 3em;
+        }
+        table {
+          width: 100%;
+        }
         button {
           color: Black;
         }
@@ -151,20 +173,22 @@
                         Previous
                       </button>
                     </li>
-                    <li
-                      v-for="(pageBtn, i) in pageBtns"
-                      class="page-item"
-                      v-bind:class="{disabled: pageIndex===i}"
-                      v-bind:key="pageBtn"
-                    >
-                      <button
-                        class="page-link"
-                        type="button"
-                        v-on:click="goToPage(i)"
-                      >
-                        {{pageBtn}}
-                      </button>
-                    </li>
+                    <!--
+                       -<li
+                       -  v-for="(pageBtn, i) in pageBtns"
+                       -  class="page-item"
+                       -  v-bind:class="{disabled: pageIndex===i}"
+                       -  v-bind:key="pageBtn"
+                       ->
+                       -  <button
+                       -    class="page-link"
+                       -    type="button"
+                       -    v-on:click="goToPage(i)"
+                       -  >
+                       -    {{pageBtn}}
+                       -  </button>
+                       -</li>
+                       -->
                     <li
                       class="page-item"
                       v-bind:class="{disabled: pageIndex + 1 >=pageCount}"
@@ -182,6 +206,9 @@
                 <div v-if="!loading">
                   <p class="mb-0">
                     Total results: <strong>{{totalCount }}</strong>
+                  </p>
+                  <p v-if="pageCount > 1">
+                    Page {{pageIndex + 1}} of {{pageCount}}
                   </p>
                   <p>Clicking on a location will display a map.</p>
                 </div>
@@ -205,7 +232,7 @@
                         <div class="container ps-2">
                           <div class="row align-items-center g-0">
                             <div class="col-11 pt-1">{{obj.display}}</div>
-                            <div class="col-1 d-flex justify-content-center">
+                            <div class="arrows col-1 p-0">
                               <span class="entryUpIcon" :id="`up${obj.id}`"
                                 >&#9650;</span
                               >
@@ -299,7 +326,7 @@
               'locations',
             ],
             currentPageIndex: 0,
-            pageSize: 10,
+            pageSize: 20,
             pageIndex: 0,
             totalCount: 0,
             pageCount: 0,
