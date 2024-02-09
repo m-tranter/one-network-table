@@ -4,6 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import convert from 'xml-js';
 import { fileURLToPath } from 'url';
+import {} from 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -11,10 +12,9 @@ const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
 
 //Change these to reflect the details of your account.
-const url =
-  'https://datacloud.one.network/?app_key=94db72b2-058e-2caf-94de16536c81';
-const user = 'cheshireeast';
-const password = 'Tkfdg58F]pjA';
+const url = process.env.url;
+const user = process.env.user;
+const password = process.env.password;
 const council = 'Cheshire East';
 
 app.listen(port, (error) => {
