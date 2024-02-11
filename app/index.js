@@ -4,7 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import convert from 'xml-js';
 import { fileURLToPath } from 'url';
-// Uncomment following line if running locally.
+// Uncomment if running locally.
 //import {} from 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
