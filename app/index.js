@@ -129,7 +129,7 @@ const loc = function (obj) {
 };
 
 // Route
-app.get('/*', (_, res) => {
+app.get('/table', (_, res) => {
   fetch(url, {
     headers: {
       Authorization: 'Basic ' + btoa(`${user}:${password}`),
@@ -137,6 +137,7 @@ app.get('/*', (_, res) => {
     },
   })
     .then((response) => {
+      console.log(response);
       return response.text();
     })
     .then((text) => {
