@@ -26,6 +26,8 @@ app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Declare the cache.
+let cache;
 // Remove some unnecessary duplication.
 const dedup = (arr) => {
   return arr.reduce((acc, e) => {
@@ -136,13 +138,11 @@ const loc = function (obj) {
 app.get('/*', async (req, res) => {
   doFetch()
     .then((data) => {
-      console.log("Sending live data.");
       res.send(JSON.stringify(data));
     })
     .catch((err) => {
       // Try falling back to cached data.
       if (cache) {
-        console.log("Sending cached data.");
         res.send(JSON.stringify(cache));
       }
       res.status(400).send();
@@ -164,6 +164,10 @@ const doFetch = async () => {
         .split(/\n\s*\n/)[0]
         .split('<publicationTime>')[1]
         .split('</publicationTime>')[0];
+      if (cache && cache.date === date) {
+        console.log('Using cache.');
+        return cache;
+      }
       // Get the situations from the XML.
       let works = text.split(/\n\s*\n/).slice(1);
       let last = works.pop().split(/\n/).slice(0, -3);
@@ -180,8 +184,8 @@ const doFetch = async () => {
       }, []);
       return { date, items: temp };
     });
-  return res ;
+  return res;
 };
 
-let cache = await doFetch();
+cache = await doFetch();
 console.log(`Cached data at ${new Date(cache.date).toLocaleString('en-GB')}`);
