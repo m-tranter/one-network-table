@@ -76,7 +76,7 @@ const Details = function (obj) {
   let comment = obj.generalPublicComment.comment.values.value;
   if (Array.isArray(comment)) {
     this.description = dedupDesc(comment.map((e) => initialCap(e._text))).join(
-      '^#'
+      '^#',
     );
   } else {
     this.description = initialCap(comment._text);
@@ -119,17 +119,21 @@ const loc = function (obj) {
   let itinerary = obj.groupOfLocations.locationContainedInItinerary;
   if (itinerary) {
     let point = itinerary[0].location.tpegPointLocation.point.name;
-    return [
-      `${
-        point[0].descriptor.values.value._text
-      }, ${point[2].descriptor.values.value._text.replace('Ward', '').trim()}`,
-    ];
+    return point
+      ? [
+          `${
+            point[0].descriptor.values.value._text
+          }, ${point[2].descriptor.values.value._text
+            .replace('Ward', '')
+            .trim()}`,
+        ]
+      : ['None'];
   }
   return ['None'];
 };
 
 // Route
-app.get('/table', (_, res) => {
+app.get('/*', (_, res) => {
   fetch(url, {
     headers: {
       Authorization: 'Basic ' + btoa(`${user}:${password}`),
@@ -137,11 +141,12 @@ app.get('/table', (_, res) => {
     },
   })
     .then((response) => {
-      console.log(response);
+      if (!response.ok) {
+        throw('No data');
+      }
       return response.text();
     })
     .then((text) => {
-      // Get the timestamp of the data.
       let date = text
         .split(/\n\s*\n/)[0]
         .split('<publicationTime>')[1]
@@ -161,5 +166,8 @@ app.get('/table', (_, res) => {
         return acc;
       }, []);
       res.send(JSON.stringify({ date: date, items: temp }));
+    })
+    .catch((err) => {
+      res.status(400).send();
     });
 });
