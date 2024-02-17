@@ -1,10 +1,10 @@
+'use strict';
 import express from 'express';
 import fetch from 'node-fetch';
 import path from 'path';
 import bodyParser from 'body-parser';
 import convert from 'xml-js';
 import { fileURLToPath } from 'url';
-// Uncomment if running locally.
 //import {} from 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -133,17 +133,30 @@ const loc = function (obj) {
 };
 
 // Route
-app.get('/*', (_, res) => {
-  fetch(url, {
+app.get('/*', async (req, res) => {
+  doFetch()
+    .then((data) => {
+      console.log("Sending live data.");
+      res.send(JSON.stringify(data));
+    })
+    .catch((err) => {
+      // Try falling back to cached data.
+      if (cache) {
+        console.log("Sending cached data.");
+        res.send(JSON.stringify(cache));
+      }
+      res.status(400).send();
+    });
+});
+
+const doFetch = async () => {
+  let res = await fetch(url, {
     headers: {
       Authorization: 'Basic ' + btoa(`${user}:${password}`),
       'Content-Type': 'application/xml; charset=utf-8',
     },
   })
     .then((response) => {
-      if (!response.ok) {
-        throw('No data');
-      }
       return response.text();
     })
     .then((text) => {
@@ -165,9 +178,10 @@ app.get('/*', (_, res) => {
         }
         return acc;
       }, []);
-      res.send(JSON.stringify({ date: date, items: temp }));
-    })
-    .catch((err) => {
-      res.status(400).send();
+      return { date, items: temp };
     });
-});
+  return res ;
+};
+
+let cache = await doFetch();
+console.log(`Cached data at ${new Date(cache.date).toLocaleString('en-GB')}`);
