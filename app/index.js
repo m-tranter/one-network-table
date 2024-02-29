@@ -97,6 +97,7 @@ const Details = function (obj) {
   this.worksState = state ? state.description._text : '';
 };
 
+
 // Helper function to get location information.
 const loc = function (obj) {
   let tpeg = obj.groupOfLocations;
@@ -135,6 +136,7 @@ const loc = function (obj) {
   }
   return ['None'];
 };
+
 
 
 
