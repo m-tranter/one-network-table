@@ -1,5 +1,7 @@
 'use strict';
 import express from 'express';
+import cors from 'cors';
+
 import fetch from 'node-fetch';
 import path from 'path';
 import bodyParser from 'body-parser';
@@ -11,6 +13,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
+app.use(cors());
+
 
 //Change these to reflect the details of your account.
 const url = process.env.url;
