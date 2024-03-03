@@ -1,7 +1,6 @@
 'use strict';
 import express from 'express';
 import cors from 'cors';
-
 import fetch from 'node-fetch';
 import path from 'path';
 import bodyParser from 'body-parser';
@@ -14,6 +13,22 @@ const app = express();
 const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
 app.use(cors());
+
+async function sendEmail(error) {
+  const body = {
+    to: 'tranter.m@sky.com',
+    subject: 'Error on roadworks Block.',
+    text: error,
+  };
+
+  await fetch('https://my-emailer.onrender.com/send', {
+    method: 'post',
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+  }).then((resp) => {
+    return resp.ok;
+  });
+}
 
 
 //Change these to reflect the details of your account.
@@ -151,7 +166,7 @@ app.get('/*', async (req, res) => {
       res.send(JSON.stringify(data));
     })
     .catch((err) => {
-      // Try falling back to cached data.
+      sendEmail(err);
       if (cache) {
         res.send(JSON.stringify(cache));
       }
