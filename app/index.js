@@ -73,7 +73,7 @@ const initialCap = (str) => {
 
 // Constructor for main 'situation' object.
 const Item = function (obj) {
-  let rec = obj.situation.situationRecord;
+  let rec = obj.situationRecord;
   if (Array.isArray(rec)) {
     this.locations = rec.map((e) => loc(e));
     this.locations = dedup(this.locations).join('^#');
