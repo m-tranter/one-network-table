@@ -39,7 +39,7 @@ const council = 'Cheshire East';
 app.listen(port, (error) => {
   if (!error) {
     console.log(`Server running on port ${port}`);
-    sendEmail(new Date().toLocaleString('en-GB');
+    sendEmail(new Date().toLocaleString('en-GB'));
   } else {
     console.log(error);
   }
