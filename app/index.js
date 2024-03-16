@@ -17,7 +17,7 @@ app.use(cors());
 function sendEmail(error) {
   const body = {
     auth: process.env.alias,
-    subject: 'Roadworks Block.',
+    subject: 'One Network - render.com.',
     text: error,
   };
 
