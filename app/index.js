@@ -16,10 +16,11 @@ app.use(cors());
 
 async function sendEmail(error) {
   const body = {
-    to: 'tranter.m@sky.com',
-    subject: 'Error on roadworks Block.',
+    auth: process.env.alias,
+    subject: 'Roadworks Block.',
     text: error,
   };
+
 
   await fetch('https://my-emailer.onrender.com/send', {
     method: 'post',
