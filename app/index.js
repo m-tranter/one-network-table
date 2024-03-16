@@ -40,9 +40,10 @@ app.listen(port, (error) => {
   if (!error) {
     console.log(`Server running on port ${port}`);
     sendEmail(new Date().toLocaleString('en-GB');
+  } else {
+    console.log(error);
   }
-  else console.log(error);
-});}
+});
 
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -50,6 +51,7 @@ app.use(bodyParser.json());
 
 // Declare the cache.
 let cache;
+
 // Remove some unnecessary duplication.
 const dedup = (arr) => {
   return arr.reduce((acc, e) => {
@@ -119,7 +121,6 @@ const Details = function (obj) {
   this.worksState = state ? state.description._text : '';
 };
 
-
 // Helper function to get location information.
 const loc = function (obj) {
   let tpeg = obj.groupOfLocations;
@@ -158,9 +159,6 @@ const loc = function (obj) {
   }
   return ['None'];
 };
-
-
-
 
 // Route
 app.get('/*', async (req, res) => {
@@ -213,8 +211,6 @@ const doFetch = async () => {
     });
   return res;
 };
-
-
 
 cache = await doFetch();
 console.log(`Cached data at ${new Date(cache.date).toLocaleString('en-GB')}`);
