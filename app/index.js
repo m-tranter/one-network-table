@@ -20,7 +20,6 @@ function sendEmail(error) {
     subject: 'One Network - render.com.',
     text: error,
   };
-
   fetch('https://my-emailer.onrender.com/send', {
     method: 'post',
     body: JSON.stringify(body),
@@ -52,17 +51,12 @@ app.use(bodyParser.json());
 // Declare the cache.
 let cache;
 
-// Remove some unnecessary duplication.
+// Flatten & remove some unnecessary duplication.
 const dedup = (arr) => {
-  return arr.reduce((acc, e) => {
-    e.forEach((l) => {
+    return arr.flat().reduce((acc, l) => {
       l = l.replace(`, ${council}`, '');
-      if (!acc.includes(l)) {
-        acc.push(l);
-      }
-    });
-    return acc;
-  }, []);
+      return acc.includes(l) ? acc : [...acc, l];
+    }, []);
 };
 
 // Ignore description items that are a single word.
