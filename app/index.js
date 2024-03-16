@@ -74,8 +74,7 @@ const initialCap = (str) => {
 const Item = function (obj) {
   let rec = obj.situationRecord;
   if (Array.isArray(rec)) {
-    this.locations = rec.map((e) => loc(e));
-    this.locations = dedup(this.locations).join('^#');
+    this.locations = dedup(rec.map((e) => loc(e))).join('^#');
     Object.assign(this, new Details(rec[0]));
   } else {
     this.locations = loc(rec).join('^#');
