@@ -14,15 +14,14 @@ const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
 app.use(cors());
 
-async function sendEmail(error) {
+function sendEmail(error) {
   const body = {
     auth: process.env.alias,
     subject: 'Roadworks Block.',
     text: error,
   };
 
-
-  await fetch('https://my-emailer.onrender.com/send', {
+  fetch('https://my-emailer.onrender.com/send', {
     method: 'post',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
@@ -31,7 +30,6 @@ async function sendEmail(error) {
   });
 }
 
-
 //Change these to reflect the details of your account.
 const url = process.env.url;
 const user = process.env.user;
@@ -39,9 +37,13 @@ const password = process.env.password;
 const council = 'Cheshire East';
 
 app.listen(port, (error) => {
-  if (!error) console.log(`Server running on port ${port}`);
+  if (!error) {
+    console.log(`Server running on port ${port}`);
+    sendEmail(new Date().toLocaleString('en-GB');
+  }
   else console.log(error);
-});
+});}
+
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
