@@ -67,7 +67,7 @@ const dedupDesc = (arr) => {
 };
 
 const initialCap = (str) => {
-  return `${str[0].toUpperCase()}${str.slice(1)}`;
+  return  str.length ? `${str[0].toUpperCase()}${str.slice(1)}` : ''
 };
 
 // Constructor for main 'situation' object.
@@ -85,7 +85,7 @@ const Item = function (obj) {
 // Separate constructor for the details part of the object.
 const Details = function (obj) {
   let sev = obj.severity;
-  this.severity = sev ? initialCap(sev._text) : '';
+  this.severity = initialCap(obj.severity?._text || '');
   this.id = obj.situationRecordCreationReference
     ? obj.situationRecordCreationReference._text
     : '';
