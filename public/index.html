@@ -30,8 +30,12 @@
           margin: 0 22px 22px 0;
         }
         .page-item button {
-          min-width: 3em;
+          min-width: 6rem;
         }
+        .page-link {
+          border-radius: 7px !important;
+        }
+
         table {
           width: 100%;
         }
@@ -160,35 +164,19 @@
                   role="navigation"
                   aria-label="Results data navigation"
                 >
-                  <ul class="pagination d-flex flex-wrap mb-2 ms-0">
+                  <ul class="pagination d-flex flex-wrap mb-2  ms-0">
                     <li
-                      class="page-item"
+                      class="page-item pe-2"
                       v-bind:class="{disabled: pageIndex===0}"
                     >
                       <button
-                        class="page-link"
+                        class="page-link mx-auto"
                         type="button"
                         v-on:click="goToPage(pageIndex - 1)"
                       >
                         Previous
                       </button>
                     </li>
-                    <!--
-                       -<li
-                       -  v-for="(pageBtn, i) in pageBtns"
-                       -  class="page-item"
-                       -  v-bind:class="{disabled: pageIndex===i}"
-                       -  v-bind:key="pageBtn"
-                       ->
-                       -  <button
-                       -    class="page-link"
-                       -    type="button"
-                       -    v-on:click="goToPage(i)"
-                       -  >
-                       -    {{pageBtn}}
-                       -  </button>
-                       -</li>
-                       -->
                     <li
                       class="page-item"
                       v-bind:class="{disabled: pageIndex + 1 >=pageCount}"
@@ -444,7 +432,7 @@
             this.pageIndex = 0;
             this.pageBtns = Array.from(
               { length: this.pageCount },
-              (_, i) => i + 1
+              (_, i) => i + 1,
             );
             this.createPages();
             this.items = this.pages[0];
@@ -477,7 +465,7 @@
                       } catch (err) {
                         return false;
                       }
-                    })
+                    }),
                   );
             this.calculatePages();
           },
@@ -505,7 +493,7 @@
                 this.date = temp.toLocaleDateString('en-GB');
                 this.time = this.formatTime(temp);
                 this.copyItems = this.addDates(data.items).filter(
-                  (e) => !e.description.match(this.ignoreRegEx)
+                  (e) => !e.description.match(this.ignoreRegEx),
                 );
                 this.copyItems = this.copyItems.map((e) => this.stripDesc(e));
                 this.addIndex(this.copyItems);
@@ -526,6 +514,7 @@
         },
       }).mount('#app');
     </script>
+
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
