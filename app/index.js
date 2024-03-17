@@ -9,12 +9,25 @@ import { fileURLToPath } from 'url';
 //import {} from 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const app = express();
 const dir = path.join(__dirname, '../public');
 const port = process.env.PORT || 3001;
-app.use(cors());
 
-function sendEmail(error) {
+
+//Change these to reflect the details of your account.
+const url = process.env.url;
+const user = process.env.user;
+const password = process.env.password;
+const council = 'Cheshire East';
+const app = express();
+let cache;
+
+// Optionally log all the environment variables.
+//let env = Object.keys(process.env).map((k) => `${k}: ${process.env[k]}`);
+//env.sort();
+//env.forEach((e) => console.log(e));
+
+// Functions
+function sendEmail(error, res = undefined) {
   const body = {
     auth: process.env.alias,
     subject: 'One Network - render.com.',
@@ -25,38 +38,18 @@ function sendEmail(error) {
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
   }).then((resp) => {
-    return resp.ok;
+    if (res) {
+      res.status(400).send();
+    }
   });
 }
 
-//Change these to reflect the details of your account.
-const url = process.env.url;
-const user = process.env.user;
-const password = process.env.password;
-const council = 'Cheshire East';
-
-app.listen(port, (error) => {
-  if (!error) {
-    console.log(`Server running on port ${port}`);
-    sendEmail(new Date().toLocaleString('en-GB'));
-  } else {
-    console.log(error);
-  }
-});
-
-app.use(express.static(dir));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Declare the cache.
-let cache;
-
 // Flatten & remove some unnecessary duplication.
 const dedup = (arr) => {
-    return arr.flat().reduce((acc, l) => {
-      l = l.replace(`, ${council}`, '');
-      return acc.includes(l) ? acc : [...acc, l];
-    }, []);
+  return arr.flat().reduce((acc, l) => {
+    l = l.replace(`, ${council}`, '');
+    return acc.includes(l) ? acc : [...acc, l];
+  }, []);
 };
 
 // Ignore description items that are a single word.
@@ -67,7 +60,93 @@ const dedupDesc = (arr) => {
 };
 
 const initialCap = (str) => {
-  return  str.length ? `${str[0].toUpperCase()}${str.slice(1)}` : ''
+  return str.length ? `${str[0].toUpperCase()}${str.slice(1)}` : '';
+};
+
+// Function to fetch data from One Network.
+const doFetch = (res) => {
+  fetch(url, {
+    headers: {
+      Authorization: 'Basic ' + btoa(`${user}:${password}`),
+      'Content-Type': 'application/xml; charset=utf-8',
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        if (cache) {
+          res.send(JSON.stringify(cache));
+        } else {
+          res.status(404).send();
+        }
+      }
+      return response.text();
+    })
+    .then((text) => {
+      let data;
+      try {
+        data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
+          'SOAP-ENV:Envelope'
+        ]['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
+      } catch (err) {
+        sendEmail(err, res);
+      }
+      let date = data.publicationTime._text;
+      if (cache && cache.date === date) {
+        console.log('Using cache.');
+      } else {
+        console.log(`Data updated: ${new Date(date).toLocaleString('en-GB')}`);
+        let items = data.situation.reduce((acc, sit) => {
+          let item = new Item(sit);
+          let el = acc.find((e) => e.id === item.id);
+          if (!el && item.locations !== 'None') {
+            acc.push(item);
+          }
+          return acc;
+        }, []);
+        // Update cache.
+        cache = { date, items };
+      }
+      res.send(JSON.stringify(cache));
+    });
+};
+
+// Helper function to get location information.
+const loc = function (obj) {
+  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point.name;
+  if (tpeg) {
+    return tpeg.reduce((acc, e) => {
+      let text = e.descriptor.values.value._text.trim();
+      if (text === council) {
+        return acc;
+      }
+      if (text.includes('Ward')) {
+        if (!acc[acc.length - 1].includes(',')) {
+          acc[acc.length - 1] += `, ${text.replace('Ward', '').trim()}`;
+        }
+        return acc;
+      }
+      if (acc[0] && text.startsWith(acc[0])) {
+        return [text];
+      }
+      return [...acc, text];
+    }, []);
+  } else {
+    let itinerary = obj.groupOfLocations?.locationContainedInItinerary;
+    if (itinerary) {
+      let point = itinerary[0].location.tpegPointLocation.point.name;
+      return point
+        ? [
+            `${
+              point[0].descriptor.values.value._text
+            }, ${point[2].descriptor.values.value._text
+              .replace('Ward', '')
+              .trim()}`,
+          ]
+        : ['None'];
+    } else {
+      return ['None'];
+    }
+  }
 };
 
 // Constructor for main 'situation' object.
@@ -84,11 +163,8 @@ const Item = function (obj) {
 
 // Separate constructor for the details part of the object.
 const Details = function (obj) {
-  let sev = obj.severity;
-  this.severity = initialCap(obj.severity?._text || '');
-  this.id = obj.situationRecordCreationReference
-    ? obj.situationRecordCreationReference._text
-    : '';
+  this.severity = initialCap(obj.severity?._text) || '';
+  this.id = obj.situationRecordCreationReference?._text || '';
   this.startDate =
     obj.validity.validityTimeSpecification.overallStartTime._text;
   this.endDate = obj.validity.validityTimeSpecification.overallEndTime._text;
@@ -104,106 +180,31 @@ const Details = function (obj) {
   this.url = obj.urlLink.urlLinkAddress._text;
   this.responsible =
     obj.situationRecordExtension.situationRecordExtended.responsibleOrganisation.responsibleOrganisationName._text;
-  let man = obj.generalNetworkManagementType;
-  this.management = man ? man._text : '';
-  let ext = obj.nonGeneralPublicComment;
-  this.extra = ext ? ext.comment.values.value._text : '';
-  let cat = obj.situationRecordExtension.situationRecordExtended.worksCategory;
-  this.worksCat = cat ? cat.description._text : '';
-  let state = obj.situationRecordExtension.situationRecordExtended.worksState;
-  this.worksState = state ? state.description._text : '';
+  this.management = obj.generalNetworkManagementType?._text || '';
+  this.extra = obj.nonGeneralPublicComment?.comment.values.value._text || '';
+  this.worksCat =
+    obj.situationRecordExtension.situationRecordExtended.worksCategory
+      ?.description._text || '';
+  this.worksState =
+    obj.situationRecordExtension.situationRecordExtended.worksState?.description
+      ._text || '';
 };
 
-// Helper function to get location information.
-const loc = function (obj) {
-  let tpeg = obj.groupOfLocations;
-  if (tpeg && tpeg.groupOfLocations && tpeg.groupOfLocations.point.name) {
-    return tpeg.groupOfLocations.point.name.reduce((acc, e) => {
-      let temp = e.descriptor.values.value._text.trim();
-      if (temp === council) {
-        return acc;
-      }
-      if (temp.includes('Ward')) {
-        if (!acc[acc.length - 1].includes(',')) {
-          acc[acc.length - 1] += `, ${temp.replace('Ward', '').trim()}`;
-        }
-        return acc;
-      }
-      if (acc[0] && temp.startsWith(acc[0])) {
-        return [temp];
-      }
-      return [...acc, temp];
-    }, []);
-  }
-  let itinerary = obj.groupOfLocations;
-  if (itinerary && itinerary.locationContainedInItinerary) {
-    let point =
-      itinerary.locationContainedInItinerary[0].location.tpegPointLocation.point
-        .name;
-    return point
-      ? [
-          `${
-            point[0].descriptor.values.value._text
-          }, ${point[2].descriptor.values.value._text
-            .replace('Ward', '')
-            .trim()}`,
-        ]
-      : ['None'];
-  }
-  return ['None'];
-};
+app.use(cors());
+app.use(express.static(dir));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// Route
-app.get('/*', async (req, res) => {
-  doFetch()
-    .then((data) => {
-      res.send(JSON.stringify(data));
-    })
-    .catch((err) => {
-      sendEmail(err);
-      if (cache) {
-        res.send(JSON.stringify(cache));
-      }
-      res.status(400).send();
-    });
+app.listen(port, (error) => {
+  if (!error) {
+    console.log(`Server running on port ${port}`);
+    sendEmail(new Date().toLocaleString('en-GB'));
+  } else {
+    console.log(error);
+  }
 });
 
-const doFetch = async () => {
-  let res = await fetch(url, {
-    headers: {
-      Authorization: 'Basic ' + btoa(`${user}:${password}`),
-      'Content-Type': 'application/xml; charset=utf-8',
-    },
-  })
-    .then((response) => {
-      return response.text();
-    })
-    .then((text) => {
-      let data = JSON.parse(
-        convert.xml2json(text, { compact: true, spaces: 4 }),
-      )['SOAP-ENV:Envelope']['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
-      let date = data.publicationTime._text; 
-      if (cache) console.log(`Cache: ${cache.date}`);
-      console.log(`Data updated: ${date}`);
-      if (cache && cache.date === date) {
-        console.log('Using cache.');
-        return cache;
-      }
-      // Get the situations from the XML.
-      let situations = data.situation;
-      let temp = situations.reduce((acc, sit) => {
-        let item = new Item(sit);
-        // Ignore duplicates or situations with no location info.
-        let el = acc.find((e) => e.id === item.id);
-        if (!el && item.locations !== 'None') {
-          acc.push(item);
-        }
-        return acc;
-      }, []);
-      return { date, items: temp };
-    });
-  return res;
-};
-
-cache = await doFetch();
-console.log(`Cached data at ${new Date(cache.date).toLocaleString('en-GB')}`);
+// Route
+app.get('/*', (_, res) => {
+  doFetch(res);
+});
