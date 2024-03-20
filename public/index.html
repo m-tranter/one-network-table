@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -11,8 +11,12 @@
     <title>Road works</title>
   </head>
   <body>
-         <div>
+    <div>
       <style type="text/css" scoped>
+        #searchInput {
+          max-width: 40rem;
+          border-radius: 0px;
+        }
         .arrows {
           max-width: 1rem;
         }
@@ -159,45 +163,86 @@
                     </div>
                   </div>
                 </div>
-                <nav
-                  v-if="pageCount > 1"
-                  role="navigation"
-                  aria-label="Results data navigation"
-                >
-                  <ul class="pagination d-flex flex-wrap mb-2  ms-0">
-                    <li
-                      class="page-item pe-2"
-                      v-bind:class="{disabled: pageIndex===0}"
-                    >
-                      <button
-                        class="page-link mx-auto"
-                        type="button"
-                        v-on:click="goToPage(pageIndex - 1)"
-                      >
-                        Previous
-                      </button>
-                    </li>
-                    <li
-                      class="page-item"
-                      v-bind:class="{disabled: pageIndex + 1 >=pageCount}"
-                    >
-                      <button
-                        class="page-link"
-                        type="button"
-                        v-on:click="goToPage(pageIndex + 1)"
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-                <div v-if="!loading">
+
+                <div class="row g-flex date align-items-end">
+                  <h2 class="fs-5">Filter by date</h2>
+                  <div class="col-md-auto m-0">
+                    <div class="col-md-auto w-auto pe-2 d-inline-block">
+                      <h3 class="fs-6">Start</h3>
+                      <label for="start-date" class="d-none">Start date</label>
+                      <input id="start-date" v-model="dateStart" type="date" />
+                    </div>
+                    <div class="col-md-auto mt-2 pe-2 w-auto d-inline-block">
+                      <h3 class="fs-6">End</h3>
+                      <label for="end-date" class="d-none">End date</label>
+                      <input id="end-date" v-model="dateEnd" type="date" />
+                    </div>
+                  </div>
+                  <div class="col-md-6 mx-0 mt-3">
+                    <ul class="pagination mb-0">
+                      <li class="page-item pe-2">
+                        <button
+                          @click="filter"
+                          class="page-link me-0 mb-0"
+                          type="button"
+                        >
+                          Filter
+                        </button>
+                      </li>
+                      <li class="page-item">
+                        <button
+                          @click="reset"
+                          class="page-link me-0 mb-0"
+                          type="button"
+                        >
+                          Reset
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div v-if="!loading" class="mt-2">
                   <p class="mb-0">
                     Total results: <strong>{{totalCount }}</strong>
                   </p>
                   <p v-if="pageCount > 1">
                     Page {{pageIndex + 1}} of {{pageCount}}
                   </p>
+
+                  <nav
+                    class="mt-1"
+                    v-if="pageCount > 1"
+                    role="navigation"
+                    aria-label="Results data navigation"
+                  >
+                    <ul class="pagination d-flex flex-wrap mb-2 ms-0">
+                      <li
+                        class="page-item pe-2"
+                        v-bind:class="{disabled: pageIndex===0}"
+                      >
+                        <button
+                          class="page-link mx-auto"
+                          type="button"
+                          v-on:click="goToPage(pageIndex - 1)"
+                        >
+                          Previous
+                        </button>
+                      </li>
+                      <li
+                        class="page-item"
+                        v-bind:class="{disabled: pageIndex + 1 >=pageCount}"
+                      >
+                        <button
+                          class="page-link"
+                          type="button"
+                          v-on:click="goToPage(pageIndex + 1)"
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
                   <p>Clicking on a location will display a map.</p>
                 </div>
                 <div v-else>
@@ -296,39 +341,13 @@
       const app = createApp({
         data() {
           return {
-            table: true,
-            mapUrl: '',
-            loading: false,
-            items: [],
-            date: '',
-            time: '',
-            searchTerm: '',
-            copyItems: [],
             backup: [],
-            searchedItems: [],
-            searchFields: [
-              'extra',
-              'severity',
-              'description',
-              'responsible',
-              'locations',
-            ],
+            copyItems: [],
             currentPageIndex: 0,
-            pageSize: 20,
-            pageIndex: 0,
-            totalCount: 0,
-            pageCount: 0,
-            pageBtns: [],
-            pages: [],
-            idRegEx: /^[A-Z]{2}\d{2}.*$/,
-            ignoreRegEx: /Diversion route scheduled|Dates to be confimed/gi,
-            remRegEx: /Roadworks \/ License - |\(Cheshire East Council\)/g,
-            loaded: false,
-            timeOptions: {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-            },
+            date: '',
+            dateEnd: undefined,
+            dateStart: undefined,
+            end: undefined,
             fields: [
               {
                 id: 'locations',
@@ -348,9 +367,64 @@
                 sort: this.sortStr,
               },
             ],
+            filteredItems: [],
+            idRegEx: /^[A-Z]{2}\d{2}.*$/,
+            ignoreRegEx: /Diversion route scheduled|Dates to be confimed/gi,
+            items: [],
+            loaded: false,
+            loading: false,
+            mapUrl: '',
+            pageBtns: [],
+            pageCount: 0,
+            pageIndex: 0,
+            pageSize: 20,
+            pages: [],
+            remRegEx: /Roadworks \/ License - |\(Cheshire East Council\)/g,
+            searchFields: [
+              'extra',
+              'severity',
+              'description',
+              'responsible',
+              'locations',
+            ],
+            searchTerm: '',
+            searchedItems: [],
+            start: undefined,
+            table: true,
+            time: '',
+            timeOptions: {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            },
+            totalCount: 0,
           };
         },
         methods: {
+          getUTCDate(date) {
+            return Date.UTC(
+              date.getUTCFullYear(),
+              date.getUTCMonth(),
+              date.getUTCDate(),
+              date.getUTCHours(),
+              date.getUTCMinutes(),
+              date.getUTCSeconds(),
+            );
+          },
+          filter: function () {
+            let st = this.getUTCDate(new Date(`${this.dateStart}T00:00`));
+            let end = this.getUTCDate(new Date(`${this.dateEnd}T23:59:59`));
+            this.filteredItems = this.copyItems.filter(
+              (e) =>
+                this.getUTCDate(e.startDate) >= st &&
+                this.getUTCDate(e.endDate) <= end,
+            );
+            this.search();
+          },
+          setPickers: function () {
+            this.dateStart = this.start.toLocaleDateString('en-CA');
+            this.dateEnd = this.end.toLocaleDateString('en-CA');
+          },
           formatTime: function (t) {
             let time = t.toLocaleTimeString('en-GB', this.timeOptions);
             if (time === '12:00 pm') {
@@ -418,10 +492,14 @@
               .filter((e) => !e.includes('scheduled'));
             return { ...obj, description: temp.join('^#') };
           },
+          reset: function () {
+            this.setPickers();
+            this.filteredItems = this.copyItems.slice();
+            this.search();
+          },
           resetSearch: function () {
             this.searchTerm = '';
-            this.searchedItems = this.copyItems.slice();
-            this.calculatePages();
+            this.search();
           },
           addIndex: function (arr) {
             arr.forEach((e, i) => (e.index = i));
@@ -455,17 +533,13 @@
           search: function () {
             this.searchedItems =
               this.searchTerm === ''
-                ? this.copyItems.slice()
-                : this.copyItems.filter((item) =>
-                    this.searchFields.some((term) => {
-                      try {
-                        return item[term]
-                          .toLowerCase()
-                          .includes(this.searchTerm.toLowerCase());
-                      } catch (err) {
-                        return false;
-                      }
-                    }),
+                ? this.filteredItems.slice()
+                : this.filteredItems.filter((item) =>
+                    this.searchFields.some((term) =>
+                      item[term]
+                        .toLowerCase()
+                        .includes(this.searchTerm.toLowerCase()),
+                    ),
                   );
             this.calculatePages();
           },
@@ -499,8 +573,20 @@
                 this.addIndex(this.copyItems);
                 this.copyItems.sort(this.sortNum('startDate'));
                 this.searchedItems = [...this.copyItems];
+                this.filteredItems = [...this.copyItems];
                 this.calculatePages();
                 this.loading = false;
+                this.start = this.items[0].startDate;
+                this.end = this.items.reduce((acc, item) => {
+                  return item.endDate > acc ? item.endDate : acc;
+                }, 0);
+                this.start.setHours(0, 0, 0, 0);
+                this.end.setHours(23, 59, 59, 999);
+                this.setPickers();
+              })
+              .catch((err) => {
+                this.loading = false;
+                this.error = true;
               });
           },
         },
@@ -514,9 +600,6 @@
         },
       }).mount('#app');
     </script>
-
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
