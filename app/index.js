@@ -83,13 +83,11 @@ const doFetch = (res) => {
     })
     .then((text) => {
       let data;
-      try {
+     
         data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
           'SOAP-ENV:Envelope'
         ]['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
-      } catch (err) {
-        sendEmail(err, res);
-      }
+
       let date = data.publicationTime._text;
       if (cache && cache.date === date) {
         console.log('Using cache.');
@@ -119,7 +117,7 @@ const loc = function (obj) {
       if (text === council) {
         return acc;
       }
-      if (text.includes('Ward')) {
+      if (text.includes('Ward') && acc.length) {
         if (!acc[acc.length - 1].includes(',')) {
           acc[acc.length - 1] += `, ${text.replace('Ward', '').trim()}`;
         }
@@ -206,5 +204,10 @@ app.listen(port, (error) => {
 
 // Route
 app.get('/*', (_, res) => {
-  doFetch(res);
+  try {
+    doFetch(res);
+      } 
+  catch (err) {
+    sendEmail(err, res);
+    }
 });
