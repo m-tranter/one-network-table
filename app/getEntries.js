@@ -7,14 +7,23 @@ import { appInner, appOuter } from './ejsTemplates.js';
 import { doFetch } from './doFetch.js';
 import listTemplate from './listTemplate.js';
 import ejs from 'ejs';
+import sendEmail from './sendEmail.js';
 
 const pageSize = 15;
 
 async function getEntries(req, res, password, user, url) {
+  let items = [];
+  let date = '';
+  // get the XML
   let payload = await doFetch(user, password, url);
-  let items = processArr(payload.items);
-  items.sort((a, b) => a.startDate - b.startDate);
-  let date = payload.date;
+  if (payload.err) {
+    sendEmail('error');
+  } else if (payload.items) {
+    items = processArr(payload.items);
+    items.sort((a, b) => a.startDate - b.startDate);
+    date = payload.date;
+  }
+
   const pages = makePages([...items], pageSize);
 
   // Create the app body by injecting the template.

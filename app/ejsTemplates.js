@@ -191,6 +191,10 @@ return createSSRApp({
             this.dateEnd = this.end.toLocaleDateString('en-CA');
           },
           getData: function () {
+            if (!this.copyItems.length) {
+              this.error = true;
+              return;
+            }
             let temp = new Date(this.date);
             this.date = temp.toLocaleDateString('en-GB');
             this.time = this.formatTime(temp);

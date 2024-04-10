@@ -64,6 +64,12 @@ async function doFetch(user, password, url) {
         cache = { date, items };
       }
       return cache;
+    })
+    .catch((err) => {
+      if (cache) {
+        return { err, ...cache };
+      }
+      return { err };
     });
 }
 
