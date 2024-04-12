@@ -225,7 +225,7 @@ const appOuter = `
   <script type="importmap">
     {
       "imports": {
-        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js"
+        "vue": "https://unpkg.com/vue@3.4.21/dist/vue.esm-browser.prod.js"
       }
     }
   </script>
