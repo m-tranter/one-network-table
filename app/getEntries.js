@@ -17,7 +17,7 @@ async function getEntries(req, res, password, user, url) {
   // get the XML
   let payload = await doFetch(user, password, url);
   if (payload.err) {
-    sendEmail('error');
+    sendEmail(payload.err.statusText);
   } else if (payload.items) {
     items = processArr(payload.items);
     items.sort((a, b) => a.startDate - b.startDate);
