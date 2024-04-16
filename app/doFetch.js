@@ -43,7 +43,7 @@ async function doFetch(user, password, url) {
       return response.text();
     })
     .then((text) => {
-      console.log(text)
+     
       let data;
       data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
         'SOAP-ENV:Envelope'
