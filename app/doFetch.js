@@ -34,12 +34,18 @@ async function doFetch(user, password, url) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw response;
+        if (cache) {
+          return cache;
+        } else {
+          return false;
+        }
       }
       return response.text();
     })
     .then((text) => {
-      let data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
+      console.log(text)
+      let data;
+      data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
         'SOAP-ENV:Envelope'
       ]['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
       let date = data.publicationTime._text;
