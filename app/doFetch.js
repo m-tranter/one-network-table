@@ -75,10 +75,6 @@ async function doFetch(user, password, url) {
 }
 
 
-// Helper function to get location information.
-
-// Helper function to get location information.
-const loc = function(obj) {
 
 // Helper function to get location information.
 const loc = function(obj) {
