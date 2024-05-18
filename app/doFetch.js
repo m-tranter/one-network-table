@@ -79,6 +79,9 @@ async function doFetch(user, password, url) {
 
 // Helper function to get location information.
 const loc = function(obj) {
+
+// Helper function to get location information.
+const loc = function(obj) {
   let tpeg = obj.groupOfLocations?.tpegPointLocation?.point.name;
   if (tpeg) {
     return tpeg.reduce((acc, e) => {
@@ -111,7 +114,8 @@ const loc = function(obj) {
         : ["None"];
     } else {
       try {
-        return [obj.groupOfLocations.tpegLinearLocation.from.name[0].descriptor.values.value._text,];
+        return [obj.groupOfLocations.tpegLinearLocation.from.name[0].descriptor.values.value._text,obj.groupOfLocations.tpegLinearLocation.from.name[2].descriptor.values.value._text.replace("Ward", "").trim()
+        ]
       }
       catch (ignore) {
         return ["None"];
@@ -119,6 +123,8 @@ const loc = function(obj) {
     }
   }
 };
+
+
 
 
 
