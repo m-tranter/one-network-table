@@ -77,7 +77,7 @@ async function doFetch(user, password, url) {
 
 // Helper function to get location information.
 const loc = function (obj) {
-  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point.name;
+  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point?.name;
   let itinerary = obj.groupOfLocations?.locationContainedInItinerary;
   let linear = obj.groupOfLocations?.tpegLinearLocation;
   if (tpeg) {
@@ -99,22 +99,17 @@ const loc = function (obj) {
     }, []);
   } else if (itinerary) {
       let point = itinerary[0].location.tpegPointLocation.point.name;
-      return point
-        ? [`${point[0].descriptor.values.value._text
+      return  [`${point[0].descriptor.values.value._text
             }, ${point[2].descriptor.values.value._text
               .replace('Ward', '')
               .trim()}`,
-          ]
-        : ['None'];
+          ];
     } else if (linear){
       let point = linear.from.name[0];
-    return point
-    ? [
-        `${point[0].descriptor.values.value._text}, ${point[2].descriptor.values.value._text
+    return [`${point[0].descriptor.values.value._text}, ${point[2].descriptor.values.value._text
           .replace('Ward', '')
           .trim()}`,
-      ]
-    : ['None'];
+      ];
     } else{return ['None'];}
 };
 
