@@ -77,7 +77,7 @@ async function doFetch(user, password, url) {
 
 // Helper function to get location information.
 const loc = function (obj) {
-  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point?.name || obj.groupOfLocations?.locationContainedInItinerary[0]?.location?.tpegPointLocation?.point?.name;
+  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point.name;
   if (tpeg) {
     return tpeg.reduce((acc, e) => {
       let text = e.descriptor.values.value._text.trim();
@@ -95,10 +95,23 @@ const loc = function (obj) {
       }
       return [...acc, text];
     }, []);
+  } else {
+    let itinerary = obj.groupOfLocations?.locationContainedInItinerary;
+    if (itinerary) {
+      let point = itinerary[0].location.tpegPointLocation.point.name;
+      return point
+        ? [
+            `${
+              point[0].descriptor.values.value._text
+            }, ${point[2].descriptor.values.value._text
+              .replace('Ward', '')
+              .trim()}`,
+          ]
+        : ['None'];
     } else {
       return ['None'];
     }
-  
+  }
 };
 
 // Constructor for main 'situation' object.
@@ -130,7 +143,8 @@ const Details = function (obj) {
   }
   this.impact = obj.impact.delays.delaysType._text;
   this.url = obj.urlLink.urlLinkAddress._text;
-  this.responsible =    obj.situationRecordExtension.situationRecordExtended.responsibleOrganisation.responsibleOrganisationName._text;
+  this.responsible =
+    obj.situationRecordExtension.situationRecordExtended.responsibleOrganisation.responsibleOrganisationName._text;
   this.management = obj.generalNetworkManagementType?._text || '';
   this.extra = obj.nonGeneralPublicComment?.comment.values.value._text || '';
   this.worksCat =
