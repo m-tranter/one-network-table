@@ -77,7 +77,7 @@ async function doFetch(user, password, url) {
 
 // Helper function to get location information.
 const loc = function (obj) {
-  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point?.name || .obj.groupOfLocations?.locationContainedInItinerary[0]?.location?.tpegPointLocation?.point?.name;
+  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point?.name || obj.groupOfLocations?.locationContainedInItinerary[0]?.location?.tpegPointLocation?.point?.name;
   if (tpeg) {
     return tpeg.reduce((acc, e) => {
       let text = e.descriptor.values.value._text.trim();
