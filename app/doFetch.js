@@ -74,55 +74,30 @@ async function doFetch(user, password, url) {
     });
 }
 
-
-
-// Helper function to get location information.
-const loc = function(obj) {
-  let tpeg = obj.groupOfLocations?.tpegPointLocation?.point.name;
-  if (tpeg) {
-    return tpeg.reduce((acc, e) => {
-      let text = e.descriptor.values.value._text.trim();
-      if (text === council) {
-        return acc;
-      }
-      if (text.includes("Ward") && acc.length) {
-        if (!acc[acc.length - 1].includes(",")) {
-          acc[acc.length - 1] += `, ${text.replace("Ward", "").trim()}`;
-        }
-        return acc;
-      }
-      if (acc[0] && text.startsWith(acc[0])) {
-        return [text];
-      }
-      return [...acc, text];
-    }, []);
-  } else {
-    let itinerary = obj.groupOfLocations?.locationContainedInItinerary;
-    if (itinerary) {
-      let point = itinerary[0].location.tpegPointLocation.point.name;
-      return point
-        ? [
-          point[0].descriptor.values.value._text
-          , point[2].descriptor.values.value._text
-            .replace("Ward", "")
-            .trim()
-        ]
-        : ["None"];
-    } else {
-      try {
-        return [obj.groupOfLocations.tpegLinearLocation.from.name[0].descriptor.values.value._text,obj.groupOfLocations.tpegLinearLocation.from.name[2].descriptor.values.value._text.replace("Ward", "").trim()
-        ]
-      }
-      catch (ignore) {
-        return ["None"];
-      }
-    }
-  }
+const getLoc = (name) => {
+  return [
+    `${
+      name[0].descriptor.values.value._text
+    }, ${name[2].descriptor.values.value._text.replace('Ward', '').trim()}`,
+  ];
 };
 
-
-
-
+// Helper function to get location information.
+const loc = function (obj) {
+  let group = obj.groupOfLocations;
+  let tpeg = group?.tpegPointLocation?.point.name;
+  let itinerary = group?.locationContainedInItinerary;
+  let linear = group?.tpegLinearLocation;
+  if (tpeg) {
+    return getLoc(tpeg);
+  } else if (itinerary) {
+    return getLoc(itinerary[0].location.tpegPointLocation.point.name);
+  } else if (linear) {
+    return getLoc(linear.from.name);
+  } else {
+    return ['None'];
+  }
+};
 
 // Constructor for main 'situation' object.
 const Item = function (obj) {
