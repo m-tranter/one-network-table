@@ -1,12 +1,19 @@
+import {} from 'dotenv/config';
 import convert from 'xml-js';
 
 let cache;
-const council = 'Cheshire East';
+const council = process.env.council;
 
 // Flatten & remove some unnecessary duplication.
 const dedup = (arr) => {
-  return arr.flat().reduce((acc, l) => {
-    l = l.replace(`, ${council}`, '');
+  arr = arr.flat().map((e) => e.replace(`, ${council}`, ''));
+  return arr.reduce((acc, l) => {
+    if (arr.some((el) => el.startsWith(l) && el.length > l.length)) {
+      return [...acc];
+    }
+    if (!arr.some((el) => el.startsWith(l))) {
+      return [...acc, l];
+    }
     return acc.includes(l) ? acc : [...acc, l];
   }, []);
 };
@@ -25,61 +32,59 @@ const initialCap = (str) => {
 };
 
 // Function to fetch data from One Network.
-async function doFetch(user, password, url) {
-  return fetch(url, {
+async function doFetch(password, user, url) {
+  let soap;
+  const data = await fetch(url, {
     headers: {
       Authorization: 'Basic ' + btoa(`${user}:${password}`),
       'Content-Type': 'application/xml; charset=utf-8',
     },
   })
-    .then((response) => {
-      if (!response.ok) {
-        if (cache) {
-          return cache;
-        } else {
-          return false;
-        }
-      }
-      return response.text();
+    .then((data) => {
+      return data.text();
     })
     .then((text) => {
-     
-      let data;
-      data = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
-        'SOAP-ENV:Envelope'
-      ]['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
-      let date = data.publicationTime._text;
+      try {
+        soap = JSON.parse(convert.xml2json(text, { compact: true, spaces: 4 }))[
+          'SOAP-ENV:Envelope'
+        ]['SOAP-ENV:Body'].d2LogicalModel.payloadPublication;
+      } catch (err) {
+        throw err;
+      }
+      let date = soap.publicationTime._text;
       if (cache && cache.date === date) {
         console.log('Using cache.');
       } else {
         console.log(`Data updated: ${new Date(date).toLocaleString('en-GB')}`);
-        let items = data.situation.reduce((acc, sit) => {
+        let items = soap.situation.reduce((acc, sit) => {
           let item = new Item(sit);
           let el = acc.find((e) => e.id === item.id);
-          if (!el && item.locations !== 'None') {
+          if (!el) {
             acc.push(item);
           }
           return acc;
         }, []);
         // Update cache.
-        cache = { date, items };
+        cache = { error: false, date, items };
       }
-      return cache;
     })
     .catch((err) => {
-      if (cache) {
-        return { err, ...cache };
+      if (!cache || !cache.items) {
+        cache = { error: true };
       }
-      return { err };
     });
+  return cache;
 }
 
 const getLoc = (name) => {
-  return [
-    `${
-      name[0].descriptor.values.value._text
-    }, ${name[2].descriptor.values.value._text.replace('Ward', '').trim()}`,
-  ];
+  let loc = ['None'];
+  if (name[0]) {
+    loc[0] = name[0].descriptor.values.value._text;
+  }
+  if (name[0] && name[2]) {
+    loc[0] = `${loc[0]}, ${name[2].descriptor.values.value._text.replace('ward', '').trim()}`;
+  }
+  return loc;
 };
 
 // Helper function to get location information.
@@ -121,7 +126,7 @@ const Details = function (obj) {
   let comment = obj.generalPublicComment.comment.values.value;
   if (Array.isArray(comment)) {
     this.description = dedupDesc(comment.map((e) => initialCap(e._text))).join(
-      '^#',
+      '^#'
     );
   } else {
     this.description = initialCap(comment._text);

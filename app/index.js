@@ -1,6 +1,6 @@
 'use strict';
 
-//import {} from 'dotenv/config';
+import {} from 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -29,12 +29,12 @@ app.set('views', path.join(__dirname, '../views'));
 app.listen(port, (error) => {
   if (!error) {
     console.log(`Server running on port ${port}`);
-    sendEmail(new Date().toLocaleString('en-GB'));
   } else {
     console.log(error);
   }
 });
 
 app.get('/', (req, res) => {
-    getEntries(req, res, password, user, url);
+  sendEmail(`Request from: ${req.ip}`);
+  getEntries(req, res, password, user, url);
 });

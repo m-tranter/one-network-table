@@ -1,5 +1,4 @@
-
-const sendEmail = (error, res = undefined) => {
+const sendEmail = (error) => {
   const body = {
     auth: process.env.alias,
     subject: 'One Network - render.com.',
@@ -9,11 +8,8 @@ const sendEmail = (error, res = undefined) => {
     method: 'post',
     body: JSON.stringify(body),
     headers: { 'Content-Type': 'application/json' },
-  }).then((resp) => {
-    if (res) {
-      res.status(400).send();
-    }
   });
-}
+  console.log(error);
+};
 
 export default sendEmail;

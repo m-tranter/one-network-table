@@ -7,17 +7,16 @@ import { appInner, appOuter } from './ejsTemplates.js';
 import { doFetch } from './doFetch.js';
 import listTemplate from './listTemplate.js';
 import ejs from 'ejs';
-import sendEmail from './sendEmail.js';
 
 const pageSize = 15;
 
 async function getEntries(req, res, password, user, url) {
   let items = [];
-  let date = "";
+  let date = '';
   // get the XML
-  let payload = await doFetch(user, password, url);
-  if (payload.err && !payload.items) {
-    sendEmail("error");
+  let payload = await doFetch(password, user, url);
+  if (payload.error && !payload.items) {
+    console.log(payload.error);
   } else {
     items = processArr(payload.items);
     items.sort((a, b) => a.startDate - b.startDate);
@@ -40,8 +39,8 @@ async function getEntries(req, res, password, user, url) {
 
   // Create a function with the app body.
   const createListApp = new Function(
-    "date, items, pages,  pageSize, createSSRApp",
-    appBody,
+    'date, items, pages,  pageSize, createSSRApp',
+    appBody
   );
 
   // Make an instance of that function, with the data we need.
@@ -49,7 +48,7 @@ async function getEntries(req, res, password, user, url) {
 
   // Render and send to client.
   renderToString(app).then((html) => {
-    res.render("index", {
+    res.render('index', {
       head_end,
       html,
     });
