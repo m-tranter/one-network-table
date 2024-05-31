@@ -77,15 +77,29 @@ async function doFetch(password, user, url) {
 }
 
 const getLoc = (name) => {
-  let loc = ['None'];
-  if (name[0]) {
-    loc[0] = name[0].descriptor.values.value._text;
+  let other = name.find(
+    (e) => e.tpegOtherPointDescriptorType._text === 'other'
+  );
+  let area = name.find(
+    (e) => e.tpegOtherPointDescriptorType._text === 'areaName'
+  );
+  let linkName = name.find(
+    (e) => e.tpegOtherPointDescriptorType._text === 'linkName'
+  );
+  if (other) {
+    return [other.descriptor.values.value._text];
   }
-  if (name[0] && name[2]) {
-    loc[0] = `${loc[0]}, ${name[2].descriptor.values.value._text.replace('ward', '').trim()}`;
+  if (linkName) {
+    let loc = [linkName.descriptor.values.value._text];
+    if (area) {
+      loc[0] = `${loc[0]}, ${area.descriptor.values.value._text.replace('Ward', '').trim()}`;
+    }
+    return loc;
   }
-  return loc;
+  return ['None'];
 };
+
+
 
 // Helper function to get location information.
 const loc = function (obj) {
