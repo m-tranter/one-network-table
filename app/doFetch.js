@@ -1,4 +1,4 @@
-//import {} from 'dotenv/config';
+import {} from 'dotenv/config';
 import convert from 'xml-js';
 
 let cache;
@@ -99,8 +99,6 @@ const getLoc = (name) => {
   return ['None'];
 };
 
-
-
 // Helper function to get location information.
 const loc = function (obj) {
   let group = obj.groupOfLocations;
@@ -109,9 +107,9 @@ const loc = function (obj) {
   let linear = group?.tpegLinearLocation;
   if (tpeg) {
     return getLoc(tpeg);
-  } else if (itinerary) {
+  } else if (itinerary && itinerary[0].location.tpegPointLocation.point.name) {
     return getLoc(itinerary[0].location.tpegPointLocation.point.name);
-  } else if (linear) {
+  } else if (linear && linear.from.name) {
     return getLoc(linear.from.name);
   } else {
     return ['None'];

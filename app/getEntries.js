@@ -9,7 +9,6 @@ import listTemplate from './listTemplate.js';
 import ejs from 'ejs';
 
 const pageSize = 15;
-
 async function getEntries(req, res, password, user, url) {
   let items = [];
   let date = '';
