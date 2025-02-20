@@ -1,6 +1,6 @@
 'use strict';
 
-import {} from 'dotenv/config';
+//import {} from 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,7 +15,7 @@ const user = process.env.user;
 const password = process.env.password;
 const app = express();
 
-const myLogger = function (req, _, next) {
+const myLogger = function(req, _, next) {
   console.log(`Incoming: ${req.url}`);
   next();
 };

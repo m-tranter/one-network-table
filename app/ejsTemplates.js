@@ -1,6 +1,92 @@
 const appInner = `
 return createSSRApp({
   data: () => ({
+          opts:  {
+            googleAPIKey: 'AIzaSyDG00gQi_7ApZ54lG6mOu6ov-fNLl7lpOg',
+            organisationID: 1451,
+            embedded: true,
+            data: {
+              layersActive: [
+                'INCIDENTS_LIVE_INCIDENT',
+                'INCIDENTS_LIVE_ACCIDENT',
+                'INCIDENTS_LIVE_WEATHER',
+                'INCIDENTS_LIVE_LANDSLIP',
+                'INCIDENTS_LIVE_FLOOD',
+                'INCIDENTS_LIVE_ROADCLOSURE',
+                'INCIDENTS_LIVE_LANECLOSURE',
+                'INCIDENTS_LIVE_HGVCLOSURE',
+                'TM_LAYER_ROADCLOSURE_LIVE',
+                'TM_LAYER_DIVERSIONROUTE_LIVE',
+                'TM_LAYER_HGVDIVERSIONROUTE_LIVE',
+                'TM_LAYER_TEMPORARYONEWAY_LIVE',
+                'TM_LAYER_BRIDGECLOSURE_LIVE',
+                'TM_LAYER_LANECLOSURE_LIVE',
+                'TM_LAYER_FOOTWAYCLOSURE_LIVE',
+                'TM_LAYER_TEMPORARYSPEEDLIMIT_LIVE',
+                'TM_LAYER_WEIGHTRESTRICTION_LIVE',
+                'TM_LAYER_SUSPENSIONWEIGHTRESTRICTION_LIVE',
+                'TM_LAYER_CLEARWAY_LIVE',
+                'TM_LAYER_TOWAWAYZONE_LIVE',
+                'TM_LAYER_TEMPPARKINGRESTRICTION_LIVE',
+                'TM_LAYER_SUSPENSIONPARKINGRESTRICTION_LIVE',
+                'TM_LAYER_SUSPENSION_BUSWAY_LIVE',
+                'TM_LAYER_SUSPENSION_BUSWAY_TRIAL',
+                'TM_LAYER_GRITTING_LIVE',
+                'TM_LAYER_PREFERRED_ACCESS_V7_LIVE',
+                'TM_LAYER_CLOSURE_CROSSING_LIVE',
+                'TM_LAYER_ROADAHEADCLOSED_LIVE',
+                'TM_LAYER_NOVEHICLEACCESS_LIVE',
+                'TM_LAYER_NORIGHTTURN_LIVE',
+                'TM_LAYER_NOLEFTTURN_LIVE',
+                'TM_LAYER_NOUTURN_LIVE',
+                'TM_LAYER_SUSPENSIONONEWAY_LIVE',
+                'TM_LAYER_REVERSALONEWAY_LIVE',
+                'TM_LAYER_TWOWAYSIGNALS_LIVE',
+                'TM_LAYER_MULTIWAYSIGNALS_LIVE',
+                'TM_LAYER_STOPANDGO_LIVE',
+                'TM_LAYER_GIVEANDTAKE_LIVE',
+                'TM_LAYER_PRIORITYSIGNS_LIVE',
+                'TM_LAYER_CONVOYWORKING_LIVE',
+                'TM_LAYER_WORKSSTOP_LIVE',
+                'ROADWORKS_CURRENT',
+                'TM_LAYER_ENTITY_CYCLING_LIVE',
+                'TM_LAYER_ENTITY_FOOTBALL_LIVE',
+                'TM_LAYER_ENTITY_HORSE_RACING_LIVE',
+                'TM_LAYER_ENTITY_MOTOR_SPORT_EVENT_LIVE',
+                'TM_LAYER_ENTITY_RUGBY_LIVE',
+                'TM_LAYER_ENTITY_RUNNING_LIVE',
+                'TM_LAYER_ENTITY_SPORT_EVENT_LIVE',
+                'TM_LAYER_ENTITY_CARNIVAL_PARADE_STREET_LIVE',
+                'TM_LAYER_ENTITY_POLLING_STATION_LIVE',
+                'TM_LAYER_ENTITY_AGRICULTURAL_SHOW_LIVE',
+                'TM_LAYER_ENTITY_AIR_SHOW_LIVE',
+                'TM_LAYER_ENTITY_REMEMBRANCE_PARADE_LIVE',
+                'TM_LAYER_ENTITY_CHRISTMAS_EVENT_LIVE',
+                'TM_LAYER_ENTITY_ENTERTAINMENT_EVENT_LIVE',
+                'TM_LAYER_ENTITY_FESTIVAL_LIVE',
+                'TM_LAYER_ENTITY_MARKET_LIVE',
+                'TM_LAYER_ENTITY_FUNERAL_LIVE',
+                'TM_LAYER_ENTITY_OTHER_PUBLIC_EVENTS_LIVE',
+              ],
+            },
+            embedID: 'NGIZHOPRC0',
+            ui: {
+              breakingNewsWidget: 660,
+            },
+            system: {
+              delayedLoad: true,
+            },
+            layer: {
+              hideLayers: ['TM_LAYER_ENTITY_CRUISE_SHIP_LIVE'],
+            },
+            map: {
+              swLat: 52.83978188528856,
+              swLng: -3.142559340451953,
+              neLat: 53.493445532391156,
+              neLng: -1.5852473287332032,
+            },
+            dateRange: 'today',
+            },
             copyItems: items,
             currentPageIndex: 0,
             date: date,
@@ -10,8 +96,6 @@ return createSSRApp({
             error: false,
             filteredItems: [],
             items: pages[0],
-            mapId: '',
-            mapUrl: '',
             pageCount: pages.length ,
             pageIndex: 0,
             pageSize: pageSize,
@@ -66,9 +150,21 @@ return createSSRApp({
             this.mapUrl = '';
           },
           showMap: function (item) {
-            this.mapId = item.locations.split('^#')[0];
-            this.mapUrl = 'https://portal-gb.one.network/prd-portal-one-network/embed/?' + item.url.split('?')[1] + '&src=rw.org&options={"googleAPIKey"%3A"AIzaSyDG00gQi_7ApZ54lG6mOu6ov-fNLl7lpOg"%2C"organisationID"%3A1451%2C"embedded"%3Atrue}';
             this.table = false;
+            const __ElginLoaderRetroFit = function(item, opts) {
+              const container = document.getElementById('erw-container');
+              if (container) {
+                let iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.src = "https://portal-gb.one.network/prd-portal-one-network/embed/?" + item.url.split('?')[1] + "&src=rw.org&options=e" + encodeURIComponent(JSON.stringify(opts));
+                container.innerHTML = '';
+                container.appendChild(iframe);
+              }
+            };
+            let Elgin = { loader: { load: __ElginLoaderRetroFit } };
+            Elgin.loader.load(item, this.opts);
           },
           setUpHeaders: function (e) {
             e.elem.addEventListener('keydown', (ev) => {
@@ -216,16 +312,16 @@ return createSSRApp({
             e.elem = document.getElementById(e.id);
             this.setUpHeaders(e);
           });
-        },
+          },
           template: \`<%- template %>\`,
-        })
-  `;
+          })
+            `;
 
 const appOuter = `
   <script type="importmap">
     {
       "imports": {
-        "vue": "https://unpkg.com/vue@3.4.21/dist/vue.esm-browser.prod.js"
+        "vue": "https://unpkg.com/vue@3.4.21/dist/vue.esm-browser.js"
       }
     }
   </script>
